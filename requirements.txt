@@ -1,3 +1,4 @@
-click
+argparse
+cmd2
 httpx
 kubernetes
