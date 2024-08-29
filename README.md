@@ -19,6 +19,8 @@ system `.kubeconfig` via the Python `kubernetes` library.
 Use the `query [question]` command inside the shell to interact with OpenShift
 Lightspeed.
 
+When you want to start a new conversation with OpenShift Lightspeed, use the
+`clear` command inside the shell.
+
 ## Future
-* Conversation support
 * Attachment support

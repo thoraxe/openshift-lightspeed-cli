@@ -10,8 +10,10 @@ class OLSShell(cmd2.Cmd):
     def __init__(self):
         # ignore the command line arguments because we want to use argparse for them
         super().__init__(allow_cli_args=False)
+        self.conversation = ''
 
     def do_query(self, line):
+
         # default OLS query endpoint path
         DEFAULT_QUERY_PATH='/v1/query'
 
@@ -20,7 +22,7 @@ class OLSShell(cmd2.Cmd):
 
         # construct the query object
         # TODO: command for getting a new conversation
-        query_obj = {'conversation_id': '', 'query': line}
+        query_obj = {'conversation_id': self.conversation, 'query': line}
 
         # use the default kubeconfig token or whatever is specifed from the user via args
         if (self.token != ''):
@@ -32,13 +34,28 @@ class OLSShell(cmd2.Cmd):
 
         # output the response from OLS
         # TODO: implement a conversation cache
-        print(r)
-        print ('===')
+
+        response = json.loads(r.text)
+
+        if (response["conversation_id"] != self.conversation):
+            self.conversation = response["conversation_id"]
+
+        print("Conversation: " + self.conversation)
+
+        # maintain the current conversation
         print(json.loads(r.text)['response'])
 
     def help_query(self):
         print('\n'.join(['query [question]', 'Query is used to ask OpenShift Lightspeed a [question]',
                          'Example: query How do I configure a horizontal pod autoscaler?']))
+
+    # resets the conversation ID so that OLS' API sees a new conversation
+    def do_clear(self, line):
+        print("OK, clearing history and starting a new conversation...")
+        self.conversation = ''
+
+    def help_clear(self):
+        print('\n'.join(['clear', 'Will start a new conversation with OpenShift Lightspeed, clearing previous history']))
 
     def do_EOF(self, line):
         return True
@@ -51,6 +68,8 @@ if __name__ == '__main__':
 
     parser.add_argument('endpoint', help='The URL of your OpenShift Lightspeed endpoint')
     parser.add_argument('-t', '--token', default='', help='uses the current kubeconfig default token by default, but --token will override')
+
+    # TODO: debug settings
     args = parser.parse_args()
 
     import sys
